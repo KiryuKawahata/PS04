@@ -1,6 +1,6 @@
 ---
 title: "STAT/MATH 495: Problem Set 04"
-author: "WRITE YOUR NAME HERE"
+author: "Kiryu Kawahata"
 date: "2017-10-03"
 output:
   html_document:
@@ -62,9 +62,79 @@ credit_test <- credit %>%
 RMSE_train <- runif(n=7)
 RMSE_test <- runif(n=7)
 
-
+#So 7 RMSE values gathered from fitting each of the models
 # Do your work here:
+```
 
+For the purpose of presenting less "ink" I have hidden repetitions of similar code in each step required for calculating the RMSE value for each model. Therefore I only display the first model code for each step on this document, while the full code can be found in the "PS04.Rmd" file.
+
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+#First each regression model is constructed for the training set.
+train1 <- lm(formula = model1_formula, data = credit_train)
+
+#Then ANOVA tables are created from each model. 
+Aov1_train <- anova(train1)
+
+#These two steps are repeated on the test data as well.
+Test1 <- lm(formula = model1_formula, data = credit_test)
+
+Aov1_test <- anova(Test1)
+
+#RMSE calculations for each dataset and corresponding number are done here by simply rooting the residual mean square from each ANOVA table. "TRRMSE" is for training set, "TERMSE" is for test set. 
+
+TRRMSE_1 <- sqrt(Aov1_train$`Mean Sq`[1])
+
+TERMSE_1 <- sqrt(Aov1_test$`Mean Sq`[1])
+```
+
+```{r, include =FALSE}
+train2 <- lm(formula = model2_formula, data = credit_train)
+train3 <- lm(formula = model3_formula, data = credit_train)
+train4 <- lm(formula = model4_formula, data = credit_train)
+train5 <- lm(formula = model5_formula, data = credit_train)
+train6 <- lm(formula = model6_formula, data = credit_train)
+train7 <- lm(formula = model7_formula, data = credit_train)
+
+Aov2_train <- anova(train2)
+Aov3_train <- anova(train3)
+Aov4_train <- anova(train4)
+Aov5_train <- anova(train5)
+Aov6_train <- anova(train6)
+Aov7_train <- anova(train7)
+
+Test2 <- lm(formula = model2_formula, data = credit_test)
+Test3 <- lm(formula = model3_formula, data = credit_test)
+Test4 <- lm(formula = model4_formula, data = credit_test)
+Test5 <- lm(formula = model5_formula, data = credit_test)
+Test6 <- lm(formula = model6_formula, data = credit_test)
+Test7 <- lm(formula = model7_formula, data = credit_test)
+
+Aov2_test <- anova(Test2)
+Aov3_test <- anova(Test3)
+Aov4_test <- anova(Test4)
+Aov5_test <- anova(Test5)
+Aov6_test <- anova(Test6)
+Aov7_test <- anova(Test7)
+
+TRRMSE_2 <- sqrt(Aov2_train$`Mean Sq`[2])
+TRRMSE_3 <- sqrt(Aov3_train$`Mean Sq`[3])
+TRRMSE_4 <- sqrt(Aov4_train$`Mean Sq`[4])
+TRRMSE_5 <- sqrt(Aov5_train$`Mean Sq`[5])
+TRRMSE_6 <- sqrt(Aov6_train$`Mean Sq`[6])
+TRRMSE_7 <- sqrt(Aov7_train$`Mean Sq`[7])
+
+TERMSE_2 <- sqrt(Aov2_test$`Mean Sq`[2])
+TERMSE_3 <- sqrt(Aov3_test$`Mean Sq`[3])
+TERMSE_4 <- sqrt(Aov4_test$`Mean Sq`[4])
+TERMSE_5 <- sqrt(Aov5_test$`Mean Sq`[5])
+TERMSE_6 <- sqrt(Aov6_test$`Mean Sq`[6])
+TERMSE_7 <- sqrt(Aov7_test$`Mean Sq`[7])
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+RMSE_train <- c(TRRMSE_1, TRRMSE_2, TRRMSE_3, TRRMSE_4, TRRMSE_5, TRRMSE_6, TRRMSE_7) 
+RMSE_test <- c(TERMSE_1, TERMSE_2, TERMSE_3, TERMSE_4, TERMSE_5, TERMSE_6, TERMSE_7)
 
 # Save results in a data frame. Note this data frame is in wide format.
 results <- data_frame(
@@ -94,7 +164,7 @@ ggplot(results, aes(x=num_coefficients, y=RMSE, col=type)) +
 
 Compare and contrast the two curves and hypothesize as to the root cause of any differences.
 
-
+When there are fewer coefficients in the regression model the fitted RMSE/score of the Test set is significantly higher than that of the Training set. However after testing for three coefficients in the model the opposite proves true, where the Test set has a lower score. This could be due to the fact that there are significantly more results/points in the test set resulting in increased model accuracy with more coefficient predictors. 
 
 # Bonus
 
@@ -102,6 +172,117 @@ Repeat the whole process, but let `credit_train` be a random sample of size 380
 from `credit` instead of 20. Now compare and contrast this graph with the
 one above and hypothesize as to the root cause of any differences.
 
-```{r, echo=FALSE}
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+set.seed(79)
+credit_train <- credit %>% 
+  sample_n(380)
+credit_test <- credit %>% 
+  anti_join(credit_train, by="ID")
+
+#Again only code for simplest models are shown on the document.
+#First the training data:
+train1 <- lm(formula = model1_formula, data = credit_train)
+
+#Converts models to tidy format:
+Convert_Tidy <- function(x){
+  x %>%
+    broom::tidy(conf.int=TRUE)
+}
+
+Convert_Tidy(train1)
+
+#Function to calculate training RMSE
+Resid_calc_TR <- function(x){
+  RMSE <- sqrt(sum(x^2)/nrow(credit_train))
+  return(RMSE)
+  }
+
+TRRMSE1 <- Resid_calc_TR(train1$residuals)
+
+#Now using Test data: 
+Test1 <- lm(formula = model1_formula, data = credit_test)
+
+Convert_Tidy(Test1)
+
+#Function to calculate RMSE for test
+Resid_calc_TE <- function(x){
+  RMSE <- sqrt(sum(x^2)/nrow(credit_test))
+  return(RMSE)
+  }
+
+TERMSE1 <- Resid_calc_TE(Test1$residuals)
+
 
 ```
+
+```{r, include=FALSE}
+train2 <- lm(formula = model2_formula, data = credit_train)
+train3 <- lm(formula = model3_formula, data = credit_train)
+train4 <- lm(formula = model4_formula, data = credit_train)
+train5 <- lm(formula = model5_formula, data = credit_train)
+train6 <- lm(formula = model6_formula, data = credit_train)
+train7 <- lm(formula = model7_formula, data = credit_train)
+
+Convert_Tidy(train2)
+Convert_Tidy(train3)
+Convert_Tidy(train4)
+Convert_Tidy(train5)
+Convert_Tidy(train6)
+Convert_Tidy(train7)
+
+TRRMSE2 <- Resid_calc_TR(train2$residuals)
+TRRMSE3 <- Resid_calc_TR(train3$residuals)
+TRRMSE4 <- Resid_calc_TR(train4$residuals)
+TRRMSE5 <- Resid_calc_TR(train5$residuals)
+TRRMSE6 <- Resid_calc_TR(train6$residuals)
+TRRMSE7 <- Resid_calc_TR(train7$residuals)
+
+Test2 <- lm(formula = model2_formula, data = credit_test)
+Test3 <- lm(formula = model3_formula, data = credit_test)
+Test4 <- lm(formula = model4_formula, data = credit_test)
+Test5 <- lm(formula = model5_formula, data = credit_test)
+Test6 <- lm(formula = model6_formula, data = credit_test)
+Test7 <- lm(formula = model7_formula, data = credit_test)
+
+Convert_Tidy(Test2)
+Convert_Tidy(Test3)
+Convert_Tidy(Test4)
+Convert_Tidy(Test5)
+Convert_Tidy(Test6)
+Convert_Tidy(Test7)
+
+TERMSE2 <- Resid_calc_TE(Test2$residuals)
+TERMSE3 <- Resid_calc_TE(Test3$residuals)
+TERMSE4 <- Resid_calc_TE(Test4$residuals)
+TERMSE5 <- Resid_calc_TE(Test5$residuals)
+TERMSE6 <- Resid_calc_TE(Test6$residuals)
+TERMSE7 <- Resid_calc_TE(Test7$residuals)
+
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+RMSE_train <- c(TRRMSE1, TRRMSE2, TRRMSE3, TRRMSE4, TRRMSE5, TRRMSE6, TRRMSE7) 
+RMSE_test <- c(TERMSE1, TERMSE2, TERMSE3, TERMSE4, TERMSE5, TERMSE6, TERMSE7)
+
+# Save results in a data frame in wide format.
+results <- data_frame(
+  num_coefficients = 1:7,
+  RMSE_train,
+  RMSE_test
+) 
+
+
+results <- results %>% 
+  rename(
+    `Training data` = RMSE_train,
+    `Test data` = RMSE_test
+  ) %>% 
+ 
+  gather(type, RMSE, -num_coefficients)
+
+ggplot(results, aes(x=num_coefficients, y=RMSE, col=type)) +
+  geom_line() + 
+  labs(x="# of coefficients", y="RMSE", col="Data used to evaluate \nperformance of fitted model")
+```
+
+The graph produced here is nearly identical to the first one however the RMSE values appear to be lower. I can only hypothesis that this is caused by the different amount of n samples in both the train and test sets.  
