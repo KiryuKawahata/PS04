@@ -285,4 +285,6 @@ ggplot(results, aes(x=num_coefficients, y=RMSE, col=type)) +
   labs(x="# of coefficients", y="RMSE", col="Data used to evaluate \nperformance of fitted model")
 ```
 
+#Bonus Interpret:
+
 The graph produced here is nearly identical to the first one however the RMSE values appear to be lower. I can only hypothesis that this is caused by the different amount of n samples in both the train and test sets.  
