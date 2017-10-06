@@ -76,16 +76,14 @@ train1 <- lm(formula = model1_formula, data = credit_train)
 #Then ANOVA tables are created from each model. 
 Aov1_train <- anova(train1)
 
-#These two steps are repeated on the test data as well.
-Test1 <- lm(formula = model1_formula, data = credit_test)
-
-Aov1_test <- anova(Test1)
+#Predictions are run on the test set using the model instead of running ANOVA
+Test1 <- predict(train1, data = credit_test)
 
 #RMSE calculations for each dataset and corresponding number are done here by simply rooting the residual mean square from each ANOVA table. "TRRMSE" is for training set, "TERMSE" is for test set. 
 
 TRRMSE_1 <- sqrt(Aov1_train$`Mean Sq`[1])
 
-TERMSE_1 <- sqrt(Aov1_test$`Mean Sq`[1])
+TERMSE_1 <- sqrt(mean((Test1 - credit_test$Balance)^2))
 ```
 
 ```{r, include =FALSE}
@@ -103,19 +101,12 @@ Aov5_train <- anova(train5)
 Aov6_train <- anova(train6)
 Aov7_train <- anova(train7)
 
-Test2 <- lm(formula = model2_formula, data = credit_test)
-Test3 <- lm(formula = model3_formula, data = credit_test)
-Test4 <- lm(formula = model4_formula, data = credit_test)
-Test5 <- lm(formula = model5_formula, data = credit_test)
-Test6 <- lm(formula = model6_formula, data = credit_test)
-Test7 <- lm(formula = model7_formula, data = credit_test)
-
-Aov2_test <- anova(Test2)
-Aov3_test <- anova(Test3)
-Aov4_test <- anova(Test4)
-Aov5_test <- anova(Test5)
-Aov6_test <- anova(Test6)
-Aov7_test <- anova(Test7)
+Test2 <- predict(train2, data = credit_test)
+Test3 <- predict(train3, data = credit_test)
+Test4 <- predict(train4, data = credit_test)
+Test5 <- predict(train5, data = credit_test)
+Test6 <- predict(train6, data = credit_test)
+Test7 <- predict(train7, data = credit_test)
 
 TRRMSE_2 <- sqrt(Aov2_train$`Mean Sq`[2])
 TRRMSE_3 <- sqrt(Aov3_train$`Mean Sq`[3])
@@ -124,12 +115,12 @@ TRRMSE_5 <- sqrt(Aov5_train$`Mean Sq`[5])
 TRRMSE_6 <- sqrt(Aov6_train$`Mean Sq`[6])
 TRRMSE_7 <- sqrt(Aov7_train$`Mean Sq`[7])
 
-TERMSE_2 <- sqrt(Aov2_test$`Mean Sq`[2])
-TERMSE_3 <- sqrt(Aov3_test$`Mean Sq`[3])
-TERMSE_4 <- sqrt(Aov4_test$`Mean Sq`[4])
-TERMSE_5 <- sqrt(Aov5_test$`Mean Sq`[5])
-TERMSE_6 <- sqrt(Aov6_test$`Mean Sq`[6])
-TERMSE_7 <- sqrt(Aov7_test$`Mean Sq`[7])
+TERMSE_2 <- sqrt(mean((Test2 - credit_test$Balance)^2))
+TERMSE_3 <- sqrt(mean((Test3 - credit_test$Balance)^2))
+TERMSE_4 <- sqrt(mean((Test4 - credit_test$Balance)^2))
+TERMSE_5 <- sqrt(mean((Test5 - credit_test$Balance)^2))
+TERMSE_6 <- sqrt(mean((Test6 - credit_test$Balance)^2))
+TERMSE_7 <- sqrt(mean((Test7 - credit_test$Balance)^2))
 ```
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
@@ -164,7 +155,7 @@ ggplot(results, aes(x=num_coefficients, y=RMSE, col=type)) +
 
 Compare and contrast the two curves and hypothesize as to the root cause of any differences.
 
-When there are fewer coefficients in the regression model the fitted RMSE/score of the Test set is significantly higher than that of the Training set. However after testing for three coefficients in the model the opposite proves true, where the Test set has a lower score. This could be due to the fact that there are significantly more results/points in the test set resulting in increased model accuracy with more coefficient predictors. 
+The RMSE scores for both sets seem close at first, but then drastically veer away from each other with an increase in coefficients. The score for the training set becomes smaller with more predictors, while the test score increases. This could be due to the models being generated from the training set which will fit the training set of data more effectively and prove to be a poor predictor on the test set.
 
 # Bonus
 
@@ -199,18 +190,18 @@ Resid_calc_TR <- function(x){
 
 TRRMSE1 <- Resid_calc_TR(train1$residuals)
 
-#Now using Test data: 
-Test1 <- lm(formula = model1_formula, data = credit_test)
+#Now predict using Test data: 
+Test1 <- predict(train1, newdata = credit_test)
 
-Convert_Tidy(Test1)
 
 #Function to calculate RMSE for test
 Resid_calc_TE <- function(x){
-  RMSE <- sqrt(sum(x^2)/nrow(credit_test))
+  Diff <- x-credit_test$Balance
+  RMSE <- sqrt(sum(Diff^2)/nrow(credit_test))
   return(RMSE)
   }
 
-TERMSE1 <- Resid_calc_TE(Test1$residuals)
+TERMSE1 <- Resid_calc_TE(Test1)
 
 
 ```
@@ -237,26 +228,19 @@ TRRMSE5 <- Resid_calc_TR(train5$residuals)
 TRRMSE6 <- Resid_calc_TR(train6$residuals)
 TRRMSE7 <- Resid_calc_TR(train7$residuals)
 
-Test2 <- lm(formula = model2_formula, data = credit_test)
-Test3 <- lm(formula = model3_formula, data = credit_test)
-Test4 <- lm(formula = model4_formula, data = credit_test)
-Test5 <- lm(formula = model5_formula, data = credit_test)
-Test6 <- lm(formula = model6_formula, data = credit_test)
-Test7 <- lm(formula = model7_formula, data = credit_test)
+Test2 <- predict(train2, newdata = credit_test)
+Test3 <- predict(train3, newdata = credit_test)
+Test4 <- predict(train4, newdata = credit_test)
+Test5 <- predict(train5, newdata = credit_test)
+Test6 <- predict(train6, newdata = credit_test)
+Test7 <- predict(train7, newdata = credit_test)
 
-Convert_Tidy(Test2)
-Convert_Tidy(Test3)
-Convert_Tidy(Test4)
-Convert_Tidy(Test5)
-Convert_Tidy(Test6)
-Convert_Tidy(Test7)
-
-TERMSE2 <- Resid_calc_TE(Test2$residuals)
-TERMSE3 <- Resid_calc_TE(Test3$residuals)
-TERMSE4 <- Resid_calc_TE(Test4$residuals)
-TERMSE5 <- Resid_calc_TE(Test5$residuals)
-TERMSE6 <- Resid_calc_TE(Test6$residuals)
-TERMSE7 <- Resid_calc_TE(Test7$residuals)
+TERMSE2 <- Resid_calc_TE(Test2)
+TERMSE3 <- Resid_calc_TE(Test3)
+TERMSE4 <- Resid_calc_TE(Test4)
+TERMSE5 <- Resid_calc_TE(Test5)
+TERMSE6 <- Resid_calc_TE(Test6)
+TERMSE7 <- Resid_calc_TE(Test7)
 
 ```
 
@@ -287,4 +271,4 @@ ggplot(results, aes(x=num_coefficients, y=RMSE, col=type)) +
 
 #Bonus Interpret:
 
-The graph produced here is nearly identical to the first one however the RMSE values appear to be lower. I can only hypothesis that this is caused by the different amount of n samples in both the train and test sets.  
+Both test and training RMSEs are nearly identical with all models. Going by the Texas sharpshooter fallacy using a training set with most of the data to create a modelis pointless since it would describe most of the data in the full sample. Naturally it would make sense this would fit well with the small sample left over for the test group. Doing this method would prevent the scores from being reliable beyon the dataset given here.
